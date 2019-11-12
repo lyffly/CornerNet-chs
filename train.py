@@ -48,7 +48,7 @@ def parse_args():
 
 def prefetch_data(system_config, db, queue, sample_data, data_aug):
     ind = 0
-    print("start prefetching data...")
+    print("start prefetching data...预先载入数据")
     np.random.seed(os.getpid())
     while True:
         try:
@@ -86,6 +86,7 @@ def terminate_tasks(tasks):
     for task in tasks:
         task.terminate()
 
+# 训练代码
 def train(training_dbs, validation_db, system_config, model, args):
     # reading arguments from command
     start_iter  = args.start_iter
@@ -107,7 +108,7 @@ def train(training_dbs, validation_db, system_config, model, args):
     decay_rate       = system_config.decay_rate
     stepsize         = system_config.stepsize
 
-    print("Process {}: building model...".format(rank))
+    print("Process {}: building model...建立模型中".format(rank))
     nnet = NetworkFactory(system_config, model, distributed=distributed, gpu=gpu)
     if initialize:
         nnet.save_params(0)
@@ -140,7 +141,7 @@ def train(training_dbs, validation_db, system_config, model, args):
     validation_pin_thread = threading.Thread(target=pin_memory, args=validation_pin_args)
     validation_pin_thread.daemon = True
     validation_pin_thread.start()
-
+    # 预训练模型倒入
     if pretrained_model is not None:
         if not os.path.exists(pretrained_model):
             raise ValueError("pretrained model does not exist")
@@ -235,6 +236,7 @@ def main(gpu, ngpus_per_node, args):
 if __name__ == "__main__":
     args = parse_args()
 
+    # 分布式
     distributed = args.distributed
     world_size  = args.world_size
 
