@@ -11,6 +11,7 @@ class Base(object):
         self._func = func
 
         if model is not None:
+            # 加载与训练模型参数
             self._nnet.load_pretrained_params(model)
 
         self._nnet.cuda()
@@ -24,6 +25,7 @@ class Base(object):
         bboxes     = self._inference(image, *args, **kwargs)
         return {self._db.cls2name(j): bboxes[j] for j in range(1, categories + 1)}
 
+# 加载config文件
 def load_cfg(cfg_file):
     with open(cfg_file, "r") as f:
         cfg = json.load(f)
@@ -32,5 +34,6 @@ def load_cfg(cfg_file):
     cfg_db  = cfg["db"]
     return cfg_sys, cfg_db
 
+# 加载模型
 def load_nnet(cfg_sys, model):
     return NetworkFactory(cfg_sys, model)

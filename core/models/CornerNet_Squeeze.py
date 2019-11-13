@@ -1,12 +1,13 @@
 import torch
 import torch.nn as nn
 
-from .py_utils import TopPool, BottomPool, LeftPool, RightPool
+from .py_utils import TopPool, BottomPool, LeftPool, RightPool  # 自定义的pooling层
 
 from .py_utils.utils import convolution, corner_pool, residual
 from .py_utils.losses import CornerNet_Loss
 from .py_utils.modules import hg_module, hg, hg_net
 
+# fire module 模块
 class fire_module(nn.Module):
     def __init__(self, inp_dim, out_dim, sr=2, stride=1):
         super(fire_module, self).__init__()

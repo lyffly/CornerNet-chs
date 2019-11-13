@@ -22,6 +22,7 @@ def _make_unpool_layer(dim):
 def _make_merge_layer(dim):
     return merge()
 
+# hourglass module
 class hg_module(nn.Module):
     def __init__(
         self, n, dims, modules, make_up_layer=_make_layer,

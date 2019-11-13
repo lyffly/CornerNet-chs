@@ -4,7 +4,7 @@ import pickle
 import importlib
 import torch.nn as nn
 
-from ..models.py_utils.data_parallel import DataParallel
+from ..models.py_utils.data_parallel import DataParallel   #并行支持
 
 torch.manual_seed(317)
 
@@ -30,6 +30,7 @@ class DummyModule(nn.Module):
     def forward(self, *xs, **kwargs):
         return self.module(*xs, **kwargs)
 
+# 网络工厂类
 class NetworkFactory(object):
     def __init__(self, system_config, model, distributed=False, gpu=None):
         super(NetworkFactory, self).__init__()
@@ -41,6 +42,7 @@ class NetworkFactory(object):
         self.loss    = model.loss
         self.network = Network(self.model, self.loss)
 
+        #并行
         if distributed:
             from apex.parallel import DistributedDataParallel, convert_syncbn_model
             torch.cuda.set_device(gpu)
@@ -58,6 +60,7 @@ class NetworkFactory(object):
             total_params += num_params
         print("total parameters: {}".format(total_params))
 
+        # 优化算法
         if system_config.opt_algo == "adam":
             self.optimizer = torch.optim.Adam(
                 filter(lambda p: p.requires_grad, self.model.parameters())
@@ -70,7 +73,7 @@ class NetworkFactory(object):
             )
         else:
             raise ValueError("unknown optimizer")
-
+    # GPU
     def cuda(self):
         self.model.cuda()
 
@@ -85,18 +88,19 @@ class NetworkFactory(object):
             return [x.cuda(self.gpu, non_blocking=True) for x in xs]
         return xs.cuda(self.gpu, non_blocking=True)
 
+    # 训练
     def train(self, xs, ys, **kwargs):
         xs = [self._t_cuda(x) for x in xs]
         ys = [self._t_cuda(y) for y in ys]
 
-        self.optimizer.zero_grad()
+        self.optimizer.zero_grad() # 比val多
         loss = self.network(xs, ys)
         loss = loss.mean()
-        loss.backward()
-        self.optimizer.step()
+        loss.backward()  # 比val多
+        self.optimizer.step() # 比val多  带反向传播
 
         return loss
-
+    # 验证
     def validate(self, xs, ys, **kwargs):
         with torch.no_grad():
             xs = [self._t_cuda(x) for x in xs]
@@ -105,17 +109,18 @@ class NetworkFactory(object):
             loss = self.network(xs, ys)
             loss = loss.mean()
             return loss
-
+    # 测试
     def test(self, xs, **kwargs):
         with torch.no_grad():
             xs = [self._t_cuda(x) for x in xs]
             return self.model(*xs, **kwargs)
 
+    # 设置学习率
     def set_lr(self, lr):
         print("setting learning rate to: {}".format(lr))
         for param_group in self.optimizer.param_groups:
             param_group["lr"] = lr
-
+    # 读与训练参数
     def load_pretrained_params(self, pretrained_model):
         print("loading from {}".format(pretrained_model))
         with open(pretrained_model, "rb") as f:

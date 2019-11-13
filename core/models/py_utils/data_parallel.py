@@ -6,6 +6,7 @@ from torch.nn.parallel.parallel_apply import parallel_apply
 
 from .scatter_gather import scatter_kwargs
 
+# 并行
 class DataParallel(Module):
     r"""Implements data parallelism at the module level.
 

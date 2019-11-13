@@ -199,7 +199,7 @@ def main(gpu, ngpus_per_node, args):
                                 world_size=args.world_size, rank=args.rank)
 
     rank = args.rank
-
+    # 读config 文件
     cfg_file = os.path.join("./configs", args.cfg_file + ".json")
     with open(cfg_file, "r") as f:
         config = json.load(f)

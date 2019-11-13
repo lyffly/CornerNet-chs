@@ -176,8 +176,8 @@ class CornerNet_Loss(nn.Module):
         self.off_loss    = _off_loss
 
     def forward(self, outs, targets):
-        tl_heats = outs[0]
-        br_heats = outs[1]
+        tl_heats = outs[0]   # tl  top left 
+        br_heats = outs[1]   # br  bottom right
         tl_tags  = outs[2]
         br_tags  = outs[3]
         tl_offs  = outs[4]
